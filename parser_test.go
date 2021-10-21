@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParse(t *testing.T) {
+func TestReplace(t *testing.T) {
 	tt := []struct {
 		input    string
 		expected string
@@ -70,7 +70,7 @@ func TestParse(t *testing.T) {
 
 	for i, tc := range tt {
 		t.Run(fmt.Sprintf("test #%d", i), func(t *testing.T) {
-			got := Parse(tc.input)
+			got := Replace(tc.input)
 
 			if got != tc.expected {
 				t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, got, tc.expected)
@@ -162,20 +162,22 @@ func TestFind(t *testing.T) {
 	}
 }
 
-func BenchmarkParse(b *testing.B) {
+func BenchmarkReplace(b *testing.B) {
+	const message = "I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:"
+
 	b.Run("static", func(b *testing.B) {
 		b.ReportAllocs()
 
 		for n := 0; n < b.N; n++ {
-			_ = Parse("I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:")
+			_ = Replace(message)
 		}
 	})
 
 	b.Run("reusable", func(b *testing.B) {
 		b.ReportAllocs()
-		p := NewParser()
+		p := NewReplacer()
 		for n := 0; n < b.N; n++ {
-			_ = p.Parse("I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:")
+			_ = p.Replace(message)
 		}
 	})
 }
