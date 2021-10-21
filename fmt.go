@@ -7,17 +7,17 @@ import (
 
 // Sprint wraps fmt.Sprint with emoji support
 func Sprint(a ...interface{}) string {
-	return Parse(fmt.Sprint(a...))
+	return Replace(fmt.Sprint(a...))
 }
 
 // Sprintf wraps fmt.Sprintf with emoji support
 func Sprintf(format string, a ...interface{}) string {
-	return Parse(fmt.Sprintf(format, a...))
+	return Replace(fmt.Sprintf(format, a...))
 }
 
 // Sprintln wraps fmt.Sprintln with emoji support
 func Sprintln(a ...interface{}) string {
-	return Parse(fmt.Sprintln(a...))
+	return Replace(fmt.Sprintln(a...))
 }
 
 // Print wraps fmt.Print with emoji support

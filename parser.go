@@ -1,20 +1,46 @@
 package emoji
 
 import (
+	"bytes"
 	"fmt"
 	"regexp"
 	"strings"
 	"unicode"
+	"unsafe"
 )
 
 var (
 	flagRegex = regexp.MustCompile(`^:flag-([a-zA-Z]{2}):$`)
 )
 
-// Parse replaces emoji aliases (:pizza:) with unicode representation.
+type Replacer struct {
+	matched bytes.Buffer
+}
+
+func NewReplacer() *Replacer {
+	return &Replacer{matched: bytes.Buffer{}}
+}
+
+// Replace replaces emoji aliases (:pizza:) with unicode representation.
+func (p *Replacer) Replace(input string) string {
+	p.matched.Reset()
+	return replaceInternal(input, &p.matched)
+}
+
+// Replace replaces emoji aliases (:pizza:) with unicode representation.
+func Replace(input string) string {
+	return replaceInternal(input, &bytes.Buffer{})
+}
+
+// Parse is an alias for Replace
 func Parse(input string) string {
-	var matched strings.Builder
+	return Replace(input)
+}
+
+// replaceInternal replaces emoji aliases (:pizza:) with unicode representation.
+func replaceInternal(input string, matched *bytes.Buffer) string {
 	var output strings.Builder
+	output.Grow(len(input))
 
 	for _, r := range input {
 		// when it's not `:`, it might be inner or outer of the emoji alias
@@ -30,7 +56,7 @@ func Parse(input string) string {
 			// if it's space, the alias's not valid.
 			// reset matched for breaking the emoji alias
 			if unicode.IsSpace(r) {
-				output.WriteString(matched.String())
+				output.WriteString(unsafeString(matched))
 				matched.Reset()
 			}
 			continue
@@ -39,13 +65,14 @@ func Parse(input string) string {
 		// r is `:` now
 		// if matched is empty, it's the beginning of the emoji alias
 		if matched.Len() == 0 {
-			matched.WriteRune(r)
+			matched.WriteByte(':')
 			continue
 		}
 
 		// it's the end of the emoji alias
-		match := matched.String()
-		alias := match + ":"
+		match := unsafeString(matched)
+		matched.WriteByte(':')
+		alias := unsafeString(matched)
 
 		// check for emoji alias
 		if code, ok := Find(alias); ok {
@@ -58,13 +85,12 @@ func Parse(input string) string {
 		output.WriteString(match)
 		// it might be the beginning of the another emoji alias
 		matched.Reset()
-		matched.WriteRune(r)
-
+		matched.WriteByte(':')
 	}
 
 	// if matched not empty, add it to output
 	if matched.Len() != 0 {
-		output.WriteString(matched.String())
+		output.WriteString(unsafeString(matched))
 		matched.Reset()
 	}
 
@@ -124,4 +150,9 @@ func checkFlag(alias string) string {
 	}
 
 	return ""
+}
+
+func unsafeString(matched *bytes.Buffer) string {
+	buf := matched.Bytes()
+	return *(*string)(unsafe.Pointer(&buf))
 }

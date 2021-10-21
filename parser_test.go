@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestParse(t *testing.T) {
+func TestReplace(t *testing.T) {
 	tt := []struct {
 		input    string
 		expected string
@@ -69,10 +69,13 @@ func TestParse(t *testing.T) {
 	}
 
 	for i, tc := range tt {
-		got := Parse(tc.input)
-		if got != tc.expected {
-			t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, got, tc.expected)
-		}
+		t.Run(fmt.Sprintf("test #%d", i), func(t *testing.T) {
+			got := Replace(tc.input)
+
+			if got != tc.expected {
+				t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, got, tc.expected)
+			}
+		})
 	}
 }
 
@@ -146,19 +149,35 @@ func TestFind(t *testing.T) {
 	}
 
 	for i, tc := range tt {
-		got, exist := Find(tc.input)
-		if got != tc.expected {
-			t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, got, tc.expected)
-		}
+		t.Run(fmt.Sprintf("test #%d", i), func(t *testing.T) {
+			got, exist := Find(tc.input)
+			if got != tc.expected {
+				t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, got, tc.expected)
+			}
 
-		if exist != tc.exist {
-			t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, exist, tc.exist)
-		}
+			if exist != tc.exist {
+				t.Fatalf("test case %v fail: got: %v, expected: %v", i+1, exist, tc.exist)
+			}
+		})
 	}
 }
 
-func BenchmarkParse(b *testing.B) {
-	for n := 0; n < b.N; n++ {
-		_ = Parse("I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:")
-	}
+func BenchmarkReplace(b *testing.B) {
+	const message = "I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:"
+
+	b.Run("static", func(b *testing.B) {
+		b.ReportAllocs()
+
+		for n := 0; n < b.N; n++ {
+			_ = Replace(message)
+		}
+	})
+
+	b.Run("reusable", func(b *testing.B) {
+		b.ReportAllocs()
+		p := NewReplacer()
+		for n := 0; n < b.N; n++ {
+			_ = p.Replace(message)
+		}
+	})
 }
