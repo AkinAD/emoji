@@ -3,6 +3,7 @@ package emoji
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 )
 
 // Base attributes
@@ -122,3 +123,43 @@ func CountryFlag(code string) (Emoji, error) {
 func countryCodeLetter(l byte) string {
 	return string(rune(l) + flagBaseIndex)
 }
+
+// ContainsEmoji checks whether a given string contains any emojis.
+func ContainsEmoji(s string) bool {
+	msg := s
+	var cRunes []rune
+
+	for len(msg) > 0 {
+		r, size := utf8.DecodeRuneInString(msg)
+		cRunes = append(cRunes, r)
+		c := string(cRunes)
+		_, ok1 := reverseEmojiMap[c]
+		_, ok2 := reverseEmojiMap[msg]
+		if ok1 || ok2 {
+			// Found alias
+			if NumberMap[c] && !numRegex.MatchString(msg) {
+				msg = msg[size:]
+				continue // false alarm, found regular digit
+			}
+			cRunes = nil
+			return true
+		}
+
+		if numRegex.MatchString(msg) {
+			return true
+		}
+
+		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
+			msg = msg[size:]
+			continue
+		}
+		// Flush cRunes if any
+		if len(cRunes) > 0 {
+			cRunes = nil
+		}
+		msg = msg[size:]
+	}
+
+	return false
+}
+

@@ -128,6 +128,82 @@ func TestNewEmojiTone(t *testing.T) {
 	}
 }
 
+func TestContainsEmoji(t *testing.T) {
+	tests := []struct {
+		name     string
+		inputStr string
+		want     bool
+	}{
+		{
+			name:     "empty input string",
+			inputStr: "",
+			want:     false,
+		},
+		{
+			name:     "string without emoji",
+			inputStr: "hello! This is a simple string without any emoji",
+			want:     false,
+		},
+		{
+			name:     "numbers in string",
+			inputStr: "qwerty1",
+			want:     false,
+		},
+		{
+			name:     "emoji number before string",
+			inputStr: "1️⃣qwerty",
+			want:     true,
+		},
+		{
+			name:     "emoji number in string",
+			inputStr: "qwerty 1️⃣",
+			want:     true,
+		},
+		{
+			name:     "several emojis and number in string",
+			inputStr: "1️⃣hello world 2️⃣4️⃣ clock 8 🕓 7️⃣",
+			want:     true,
+		},
+		{
+			name:     "only emoji in string",
+			inputStr: `🥰`,
+			want:     true,
+		},
+		{
+			name:     "emoji in the middle of a string",
+			inputStr: `hi 😀 how r u?`,
+			want:     true,
+		},
+		{
+			name:     "emoji in the end of a string",
+			inputStr: `hi! how r u doing?🤔`,
+			want:     true,
+		},
+		{
+			name:     "heart emoji in string",
+			inputStr: "I ❤️ you",
+			want:     true,
+		},
+		{
+			name:     "Skin tone emoji 1",
+			inputStr: "for you 👍🏿",
+			want:     true,
+		},
+		{
+			name:     "Skin tone complex emoji ",
+			inputStr: "for you 👩🏾‍❤️‍👨🏿",
+			want:     true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsEmoji(tt.inputStr); got != tt.want {
+				t.Errorf("ContainsEmoji() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func BenchmarkEmoji(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_ = WavingHand.String()
