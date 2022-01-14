@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	emojipkg "github.com/WinnerSoftLab/emoji"
+	emojipkg "github.com/AkinAD/emoji"
 )
 
-const emojiListURL = "https://unicode.org/Public/emoji/13.0/emoji-test.txt"
+const emojiListURL = "https://unicode.org/Public/emoji/14.0/emoji-test.txt"
 
 var (
 	emojiRegex = regexp.MustCompile(`^(?m)(?P<code>[A-Z\d ]+[A-Z\d])\s+;\s+(fully-qualified|component)\s+#\s+.+\s+E\d+\.\d+ (?P<name>.+)$`)
@@ -122,6 +122,7 @@ func newEmoji(line string) *emoji {
 }
 
 func (e *emoji) extractAttr() {
+	// look for attributes such as skin-tone, facial hair, hair type
 	parts := strings.Split(e.Constant, ":")
 	if len(parts) < 2 {
 		// no attributes

@@ -78,12 +78,19 @@ func emojiConstant(emojis []emoji) string {
 
 		return fmt.Sprintf("%s EmojiWithTone = newEmojiWithTone(%+q) // %s\n",
 			basic.Constant, oneTonedCode, basic.Name)
+	case 20:
+		oneTonedCode := replaceTones(emojis[1].Code)
+		twoTonedCode := replaceTones(emojis[2].Code)
+
+		return fmt.Sprintf("%s EmojiWithTone = newEmojiWithTone(%+q, %+q) // %s\n",
+			basic.Constant, oneTonedCode, twoTonedCode, basic.Name)
 	case 26:
 		oneTonedCode := replaceTones(emojis[1].Code)
 		twoTonedCode := replaceTones(emojis[2].Code)
 
 		return fmt.Sprintf("%s EmojiWithTone = newEmojiWithTone(%+q, %+q) // %s\n",
 			basic.Constant, oneTonedCode, twoTonedCode, basic.Name)
+
 	default:
 		panic(fmt.Errorf("not expected emoji count for a constant: %v", len(emojis)))
 	}
