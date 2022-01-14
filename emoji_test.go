@@ -204,6 +204,51 @@ func TestContainsEmoji(t *testing.T) {
 	}
 }
 
+func TestRemoveEmojis(t *testing.T) {
+	tests := []struct {
+		name     string
+		inputStr string
+		want     string
+	}{
+		{
+			name:     "string without emoji",
+			inputStr: "string without emoji",
+			want:     "string without emoji",
+		},
+		{
+			name:     "string with numbers",
+			inputStr: "1qwerty2",
+			want:     "1qwerty2",
+		},
+		{
+			name:     "string with emoji numbers",
+			inputStr: "1️⃣qwerty2",
+			want:     "qwerty2",
+		},
+		{
+			name:     "string with emojis",
+			inputStr: "❤️🛶😂",
+			want:     "",
+		},
+		{
+			name:     "string with unicode 14 emoji",
+			inputStr: "te\U0001FAB7st",
+			want:     "test",
+		},
+		{
+			name:     "remove rare emojis",
+			inputStr: "🧖 hello 🦋world",
+			want:     "hello world",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RemoveEmojis(tt.inputStr); got != tt.want {
+				t.Errorf("RemoveEmojis() = [%v], want [%v]", got, tt.want)
+			}
+		})
+	}
+}
 func BenchmarkEmoji(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		_ = WavingHand.String()

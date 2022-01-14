@@ -163,3 +163,38 @@ func ContainsEmoji(s string) bool {
 	return false
 }
 
+// RemoveEmojis removes all emojis from the s string and returns a new string.
+func RemoveEmojis(msg string) string {
+	var cRunes []rune
+	var output strings.Builder
+	// var potentialNumEmoji []rune
+
+	for len(msg) > 0 {
+		msg = numRegex.ReplaceAllString(msg, "")
+		if numRegex.MatchString(msg) {
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(msg)
+		cRunes = append(cRunes, r)
+		c := fmt.Sprintf("%s", string(cRunes))
+		_, ok1 := reverseEmojiMap[c]
+		_, ok2 := reverseEmojiMap[msg]
+		if (ok1 || ok2) && !NumberMap[c] {
+			// Found alias
+			output.WriteString("")
+			cRunes = nil
+		}
+
+		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
+			msg = msg[size:]
+			continue
+		}
+		// Flush cRunes if any
+		if len(cRunes) > 0 {
+			output.WriteString(string(cRunes))
+			cRunes = nil
+		}
+		msg = msg[size:]
+	}
+	return strings.TrimSpace(output.String())
+}
