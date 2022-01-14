@@ -162,6 +162,58 @@ func TestFind(t *testing.T) {
 	}
 }
 
+func TestDeparse(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		inputStr string
+		want     string
+	}{
+		{
+			name:     "❤️ emoji",
+			inputStr: "I ❤️ you",
+			want:     "I :red_heart: you",
+		},
+		{
+			name:     "string with numbers",
+			inputStr: "1qwerty2",
+			want:     "1qwerty2",
+		},
+		{
+			name:     "string with emoji numbers",
+			inputStr: "1️⃣qwerty2",
+			want:     ":one:qwerty2",
+		},
+		{
+			name:     "all emojis ",
+			inputStr: "❤️🛶😂7️⃣3️⃣",
+			want:     ":red_heart::canoe::joy::keycap_7::three:",
+		},
+		{
+			name:     "string with unicode 14 emoji",
+			inputStr: "te\U0001FAB7st",
+			want:     "te:lotus:st",
+		},
+		{
+			name:     "No mess with numbers",
+			inputStr: "7️⃣5438*️⃣93️⃣",
+			want:     ":keycap_7:5438:asterisk:9:three:",
+		},
+		{
+			name:     "emoji Numbers, words and real numbers",
+			inputStr: "4️⃣ haha6 8 2️⃣",
+			want:     ":keycap_4: haha6 8 :keycap_2:",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Deparse(tt.inputStr); got != tt.want {
+				t.Errorf("RemoveEmojis() = [%v], want [%v]", got, tt.want)
+			}
+		})
+	}
+}
+
 func BenchmarkReplace(b *testing.B) {
 	const message = "I am :man_technologist: from :flag_for_turkey:. Tests are :thumbs_up:"
 

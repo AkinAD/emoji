@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strings"
 	"text/template"
 	"time"
 )
@@ -17,6 +18,7 @@ import (
 const (
 	constantsFile = "constants.go"
 	aliasesFile   = "map.go"
+	reversedFile  = "reversed_map.go"
 )
 
 // customEmojis is the list of emojis which unicode and gemoji databases don't have.
@@ -36,13 +38,18 @@ func main() {
 	}
 
 	constants := generateConstants(emojis)
-	aliases := generateAliases(emojis, gemojis)
+	aliases, fullEmojiMap := generateAliases(emojis, gemojis)
+
+	reversed := generateReversedMap(fullEmojiMap)
 
 	if err = save(constantsFile, emojiListURL, constants); err != nil {
 		panic(err)
 	}
 
 	if err = save(aliasesFile, gemojiURL, aliases); err != nil {
+		panic(err)
+	}
+	if err = save(reversedFile, gemojiURL, reversed); err != nil {
 		panic(err)
 	}
 }
@@ -96,7 +103,7 @@ func emojiConstant(emojis []emoji) string {
 	}
 }
 
-func generateAliases(emojis *groups, gemojis map[string]string) string {
+func generateAliases(emojis *groups, gemojis map[string]string) (string, map[string]string) {
 	var aliases []string
 	var emojiMap = make(map[string]string)
 
@@ -139,7 +146,7 @@ func generateAliases(emojis *groups, gemojis map[string]string) string {
 		r += fmt.Sprintf("%q: %+q,\n", alias, emojiMap[alias])
 	}
 
-	return r
+	return r, emojiMap
 }
 func save(filename, url, data string) error {
 	tmpl, err := template.ParseFiles(fmt.Sprintf("internal/generator/%v.tmpl", filename))
@@ -218,4 +225,31 @@ func readLines(b []byte, fn func(string)) error {
 	}
 
 	return nil
+}
+
+func generateReversedMap(gemojis map[string]string) string {
+	m := reverseMap(gemojis)
+	custom := reverseMap(customEmojis)
+	for k, v := range custom {
+		m[k] = v
+	}
+	var r string
+	for k, v := range m {
+		r += fmt.Sprintf("%+q: %+q,\n", k, v)
+
+	}
+	return r
+
+}
+
+func reverseMap(m map[string]string) map[string]string {
+	n := make(map[string]string)
+	for k, v := range m {
+		n[v] = k
+		if strings.Contains(v, "\u20e3") { // it is an emoji number e.g 7️⃣ or 4️⃣
+			alternateName := v[0:1] // select just the number
+			n[alternateName] = k
+		}
+	}
+	return n
 }
