@@ -1,6 +1,7 @@
 package emoji
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -240,11 +241,61 @@ func TestRemoveEmojis(t *testing.T) {
 			inputStr: "🧖 hello 🦋world",
 			want:     "hello world",
 		},
+		{
+			name:     "many emojis, numbers, skintone, etc  ",
+			inputStr: "#️⃣string ❤️ 😏🕺🏿hey1️⃣🕓3#👩🏾‍❤️‍👨🏿",
+			want:     "string  hey3#",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := RemoveEmojis(tt.inputStr); got != tt.want {
 				t.Errorf("RemoveEmojis() = [%v], want [%v]", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestFindAllEmojis(t *testing.T) {
+	tests := []struct {
+		name     string
+		inputStr string
+		want     []string
+	}{
+		{
+			name:     "simple text, no emoji ",
+			inputStr: "string without emoji",
+			want:     []string{},
+		},
+		{
+			name:     "skin tone preserved ",
+			inputStr: "👩🏽‍❤️‍💋‍👨🏿👨🏿‍🦰👩🏿‍🤝‍👨🏽f4mily!👨‍👨‍👧*️⃣🧑🏿‍🤝‍🧑🏻",
+			want:     []string{"👩🏽‍❤️‍💋‍👨🏿", "👨🏿‍🦰", "👩🏿‍🤝‍👨🏽", "👨‍👨‍👧", "*️⃣", "🧑🏿‍🤝‍🧑🏻"},
+		},
+		{
+			name:     "one emoji ",
+			inputStr: "string ❤️ emoji",
+			want:     []string{"❤️"},
+		},
+		{
+			name:     "string with unicode 14 ",
+			inputStr: "#️⃣string te\U0001FAB7st 👩🏽‍❤️‍💋‍👨🏿",
+			want:     []string{"#️⃣", "\U0001FAB7", "👩🏽‍❤️‍💋‍👨🏿"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FindAll(tt.inputStr)
+			// check individual elems
+			for i := 0; i < len(tt.want); i++ {
+				if !reflect.DeepEqual(got[i], tt.want[i]) {
+					t.Errorf("Emoji find all not equal = %v, want %v", got[i], tt.want[i])
+				}
+			}
+
+			// check whole array
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("RemoveEmojis() = %v, want %v", got, tt.want)
 			}
 		})
 	}

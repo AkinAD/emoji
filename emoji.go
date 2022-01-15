@@ -198,3 +198,86 @@ func RemoveEmojis(msg string) string {
 	}
 	return strings.TrimSpace(output.String())
 }
+
+// FindAll finds all emojis in given string and return as an array of strings. If there are no emojis it returns a nil-slice.
+func FindAll(in string) []string {
+	var emojis []string = make([]string, 0)
+
+	var cRunes []rune
+	var output strings.Builder
+
+	// var numLookup = make(map[string]string)
+
+	// var potentialNumEmoji []rune
+	// potentialNumPos := numRegex.FindAllStringIndex(in, -1)
+	potentialNums := numRegex.FindAllString(in, -1)
+	// for i := 0; i < len(potentialNumPos); i++ {
+	// 	numLoc[fmt.Sprintf("%d", potentialNumPos[i][0])] = potentialNums[i]
+	// }
+	placeholder := "-"
+	prevWasJoiner := false
+	in = numRegex.ReplaceAllString(in, placeholder)
+
+	for len(in) > 0 {
+		r, size := utf8.DecodeRuneInString(in)
+		cRunes = append(cRunes, r)
+		c := string(cRunes)
+		_, ok1 := reverseEmojiMap[c]
+		_, ok2 := reverseEmojiMap[in]
+		if (ok1 || ok2) && !NumberMap[c] && !isSkinTone(c) && !prevWasJoiner {
+			// Found alias
+			emojis = append(emojis, c)
+			cRunes = nil
+		}
+		if c == placeholder {
+			numEmoji := potentialNums[0] // get the first match
+			emojis = append(emojis, numEmoji)
+			potentialNums = potentialNums[1:]
+			continue
+
+		}
+		if isSkinTone(c) {
+			emojis[len(emojis)-1] += c
+			cRunes = nil
+		}
+		if isJoiner(c) || prevWasJoiner {
+			emojis[len(emojis)-1] += c
+			cRunes = nil
+			prevWasJoiner = !prevWasJoiner
+			in = in[size:]
+			continue
+		}
+
+		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
+			in = in[size:]
+			continue
+		}
+		// Flush cRunes if any
+		if len(cRunes) > 0 {
+			output.WriteString(string(cRunes))
+			cRunes = nil
+		}
+		in = in[size:]
+	}
+	return emojis
+}
+
+func isSkinTone(in string) bool {
+	switch in {
+	case Light.String():
+		return true
+	case MediumLight.String():
+		return true
+	case Medium.String():
+		return true
+	case MediumDark.String():
+		return true
+	case Dark.String():
+		return true
+	default:
+		return false
+	}
+}
+func isJoiner(in string) bool {
+	return joinerRegex.MatchString(in)
+}
