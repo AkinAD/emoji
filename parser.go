@@ -17,7 +17,9 @@ var (
 	// numRegex = regexp.MustCompile(`[0-9-]\x{FE0F}|\x{20E3}|(?i)20E3|(?i)FE0F`)
 	// numRegex = regexp.MustCompile(`(?P<digit>\d)(\x{FE0F}|\x{20E3}|(?i)20E3|(?i)FE0F<other>)`) //
 	// numRegex = regexp.MustCompile(`(?P<digit>\d)(\x{FE0F}\x{20E3}|(?i)20E3|(?i)FE0F<other>)`)        // named :match any digit emoji
-	numRegex = regexp.MustCompile(`(?P<digit>\*|\#|\d)(\x{FE0F}\x{20E3}|(?i)20E3|(?i)FE0F<other>)`) // named: match any digit emoji and #️⃣*️⃣
+	numRegex    = regexp.MustCompile(`(?P<digit>\*|\#|\d)(\x{FE0F}\x{20E3}|(?i)20E3|(?i)FE0F<other>)`) // named: match any digit emoji and #️⃣*️⃣
+	joinerRegex = regexp.MustCompile(`(?i)\x{200d}`)                                                   // for complex emojis such as 👩🏾‍❤️‍👨🏿 which ias actually an amagam of 3 emojis 🧔🏿‍♀️,❤️, and  with "\u200d" inbetween the characters👨🏿
+	toneRegex   = regexp.MustCompile(`\x{1F3FB}|\x{1F3FC}|\x{1F3FC}|\x{1F3FD}|\x{1F3FE}|\x{1F3FF}`)
 )
 
 type Replacer struct {
@@ -169,26 +171,27 @@ func unsafeString(matched *bytes.Buffer) string {
 	buf := matched.Bytes()
 	return *(*string)(unsafe.Pointer(&buf))
 }
-func Deparse(msg string) string {
+func Deparse(in string) string {
 	var cRunes []rune
 	var output strings.Builder
 	in = toneRegex.ReplaceAllString(in, "") // strip tones away
+	for len(in) > 0 {
 		// dealing with a number emoji is convoluted
-		result := ReplaceAllStringSubmatchFunc(numRegex, msg, func(groups []string) string {
+		result := ReplaceAllStringSubmatchFunc(numRegex, in, func(groups []string) string {
 			//groups[1] is the digit portion of an emoji
 			// E.g 7️⃣ is represented as "7\ufe0f\u20e3", the regex seperates 7 out and discards the rest (groups[2])
 			// groups[0] is the original emoji. in this exapmle 7️⃣
 			return reverseEmojiMap[groups[0]]
 		})
-		msg = result
+		in = result
 
-		r, size := utf8.DecodeRuneInString(msg)
+		r, size := utf8.DecodeRuneInString(in)
 		cRunes = append(cRunes, r)
 		c := fmt.Sprintf("%s", string(cRunes))
 
 		if alias, ok := reverseEmojiMap[c]; ok && !NumberMap[c] {
 			// Found alias
-			normalizedStr := normalizedString(msg)
+			normalizedStr := normalizedString(in)
 			lge, s := longestEmoji(normalizedStr)
 			if lge != "" {
 				output.WriteString(lge)
@@ -201,7 +204,7 @@ func Deparse(msg string) string {
 
 		}
 		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
-			msg = msg[size:]
+			in = in[size:]
 			continue
 		}
 
@@ -210,7 +213,7 @@ func Deparse(msg string) string {
 			output.WriteString(string(cRunes))
 			cRunes = nil
 		}
-		msg = msg[size:]
+		in = in[size:]
 	}
 	return output.String()
 }

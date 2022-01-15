@@ -126,59 +126,59 @@ func countryCodeLetter(l byte) string {
 
 // ContainsEmoji checks whether a given string contains any emojis.
 func ContainsEmoji(s string) bool {
-	msg := s
+	in := s
 	var cRunes []rune
 
-	for len(msg) > 0 {
-		r, size := utf8.DecodeRuneInString(msg)
+	for len(in) > 0 {
+		r, size := utf8.DecodeRuneInString(in)
 		cRunes = append(cRunes, r)
 		c := string(cRunes)
 		_, ok1 := reverseEmojiMap[c]
-		_, ok2 := reverseEmojiMap[msg]
+		_, ok2 := reverseEmojiMap[in]
 		if ok1 || ok2 {
 			// Found alias
-			if NumberMap[c] && !numRegex.MatchString(msg) {
-				msg = msg[size:]
+			if NumberMap[c] && !numRegex.MatchString(in) {
+				in = in[size:]
 				continue // false alarm, found regular digit
 			}
 			cRunes = nil
 			return true
 		}
 
-		if numRegex.MatchString(msg) {
+		if numRegex.MatchString(in) {
 			return true
 		}
 
 		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
-			msg = msg[size:]
+			in = in[size:]
 			continue
 		}
 		// Flush cRunes if any
 		if len(cRunes) > 0 {
 			cRunes = nil
 		}
-		msg = msg[size:]
+		in = in[size:]
 	}
 
 	return false
 }
 
 // RemoveEmojis removes all emojis from the s string and returns a new string.
-func RemoveEmojis(msg string) string {
+func RemoveEmojis(in string) string {
 	var cRunes []rune
 	var output strings.Builder
 	// var potentialNumEmoji []rune
 
-	for len(msg) > 0 {
-		msg = numRegex.ReplaceAllString(msg, "")
-		if numRegex.MatchString(msg) {
+	for len(in) > 0 {
+		in = numRegex.ReplaceAllString(in, "")
+		if numRegex.MatchString(in) {
 			continue
 		}
-		r, size := utf8.DecodeRuneInString(msg)
+		r, size := utf8.DecodeRuneInString(in)
 		cRunes = append(cRunes, r)
 		c := fmt.Sprintf("%s", string(cRunes))
 		_, ok1 := reverseEmojiMap[c]
-		_, ok2 := reverseEmojiMap[msg]
+		_, ok2 := reverseEmojiMap[in]
 		if (ok1 || ok2) && !NumberMap[c] {
 			// Found alias
 			output.WriteString("")
@@ -186,7 +186,7 @@ func RemoveEmojis(msg string) string {
 		}
 
 		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
-			msg = msg[size:]
+			in = in[size:]
 			continue
 		}
 		// Flush cRunes if any
@@ -194,7 +194,7 @@ func RemoveEmojis(msg string) string {
 			output.WriteString(string(cRunes))
 			cRunes = nil
 		}
-		msg = msg[size:]
+		in = in[size:]
 	}
 	return strings.TrimSpace(output.String())
 }
@@ -260,6 +260,13 @@ func FindAll(in string) []string {
 		in = in[size:]
 	}
 	return emojis
+}
+
+// Return random emoji
+func Random() string {
+	// r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	// return emojiMap[r.Intn(len(e))]
+	return ""
 }
 
 func isSkinTone(in string) bool {

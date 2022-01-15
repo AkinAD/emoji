@@ -204,6 +204,16 @@ func TestDeparse(t *testing.T) {
 			inputStr: "4️⃣ haha6 8 2️⃣",
 			want:     ":keycap_4: haha6 8 :keycap_2:",
 		},
+		{
+			name:     "complex with heart emoji - 👩🏾‍❤️‍👨🏿",
+			inputStr: "👩🏾‍❤️‍👨🏿",
+			want:     ":couple_with_heart_woman_man:",
+		},
+		{
+			name:     "complex kiss emoji - 💏🏾 & 👩🏽‍❤️‍💋‍👨🏿",
+			inputStr: "💏🏾 👩🏽‍❤️‍💋‍👨🏿",
+			want:     ":couplekiss: :kiss_woman_man:",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
