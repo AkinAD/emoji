@@ -172,8 +172,7 @@ func unsafeString(matched *bytes.Buffer) string {
 func Deparse(msg string) string {
 	var cRunes []rune
 	var output strings.Builder
-
-	for len(msg) > 0 {
+	in = toneRegex.ReplaceAllString(in, "") // strip tones away
 		// dealing with a number emoji is convoluted
 		result := ReplaceAllStringSubmatchFunc(numRegex, msg, func(groups []string) string {
 			//groups[1] is the digit portion of an emoji
