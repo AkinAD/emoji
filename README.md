@@ -8,7 +8,9 @@
 
 `emoji` is a minimalistic emoji library for Go. It lets you use emoji characters in strings.
 
-Inspired by [spatie/emoji](https://github.com/spatie/emoji)
+Inspired by [spatie/emoji](https://github.com/spatie/emoji).
+
+This work has been modified by Akin from the original creator [enescakir/emoji](https://github.com/enescakir/emoji) and includes updates from [WinnerSoftLab/emoji](https://github.com/WinnerSoftLab/emoji) and [liemle3893/emoji](https://github.com/liemle3893/emoji) with inspiration from [forPelevin/gomoji](https://github.com/forPelevin/gomoji) as well.
 
 ## Install :floppy_disk:
 
@@ -64,6 +66,8 @@ This package contains emojis constants based on [Full Emoji List v14.0](https://
 ```go
 emoji.CallMeHand // 🤙
 emoji.CallMeHand.Tone(emoji.Dark) // 🤙🏿
+emoji.HasTone("💏🏽") // True
+emoji.GetAllTones("👩🏿‍🤝‍👨🏽") // [emoji.Dark, emoji.Medium]
 ```
 
 Also, it has additional emoji aliases from [github/gemoji](https://github.com/github/gemoji).
@@ -71,6 +75,24 @@ Also, it has additional emoji aliases from [github/gemoji](https://github.com/gi
 ```go
 emoji.Parse(":+1:") // 👍
 emoji.Parse(":100:") // 💯
+```
+
+The package also supports backwards naming of emojis.
+
+```go
+emoji.Deparse("I ❤️ apples") // I :read_heart: apples
+emoji.Deparse("te\U0001FAB7st") // te:lotus:st
+emoji.Deparse("👩🏾‍❤️‍👨🏿") // :couple_with_heart_woman_man:
+
+```
+
+You can detect emojis in a given string.
+
+```go
+emoji.ContainsEmoji("I won 🎊") // true
+emoji.FindAllEmojis("👩🏽‍❤️‍💋‍👨🏿👨🏿‍🦰👩🏿‍🤝‍👨🏽f4mily!👨‍👨‍👧*️⃣🧑🏿‍🤝‍🧑🏻") // ["👩🏽‍❤️‍💋‍👨🏿", "👨🏿‍🦰", "👩🏿‍🤝‍👨🏽", "👨‍👨‍👧", "*️⃣" ,"🧑🏿‍🤝‍🧑🏻" ]
+emoji.RemoveAllEmojis("te\U0001FAB7st") // test
+emoji.RemoveAllEmojis("🧖 hello 🦋world") // hello world
 ```
 
 You can generate country flag emoji with [ISO 3166 Alpha2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) codes:
@@ -108,7 +130,11 @@ to look up the correct unicode value and the name of the character.
 
 ## Credits :star:
 
-- [Enes Çakır](https://github.com/AkinAD)
+- [Enes Çakır](https://github.com/enescakir)
+- [WinnerSoftLab](https://github.com/WinnerSoftLab)
+- [liemle3893](https://github.com/liemle3893)
+- [forPelevin](https://github.com/forPelevin)
+- [Akin - thats me! ✨](https://github.com/AkinAD)
 
 ## License :scroll:
 
