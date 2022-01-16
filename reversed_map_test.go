@@ -7,15 +7,15 @@ import (
 
 func TestEmojiExists(t *testing.T) {
 	x := reverseEmojiMap["❤️"]
-	if ":red_heart:" != x {
+	if x != ":red_heart:" {
 		t.Fatal("Emoji not found")
 	}
 	y := reverseEmojiMap["1️⃣"]
-	if ":one:" != y {
+	if y != ":one:" {
 		t.Fatal("Emoji not found")
 	}
 	z := reverseEmojiMap["❤️‍🔥"]
-	if ":heart_on_fire:" != z {
+	if z != ":heart_on_fire:" {
 		t.Fatal("Emoji not found")
 	}
 	testCases := []struct {

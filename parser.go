@@ -187,7 +187,7 @@ func Deparse(in string) string {
 
 		r, size := utf8.DecodeRuneInString(in)
 		cRunes = append(cRunes, r)
-		c := fmt.Sprintf("%s", string(cRunes))
+		c := string(cRunes)
 
 		if alias, ok := reverseEmojiMap[c]; ok && !NumberMap[c] {
 			// Found alias
@@ -259,7 +259,7 @@ func longestEmoji(normalizedStr string) (string, int) {
 	runes := []rune(normalizedStr)
 	size := 0
 	for len(runes) > 0 {
-		emoji := fmt.Sprintf("%s", string(runes))
+		emoji := string(runes)
 		if alias, ok := reverseEmojiMap[emoji]; ok {
 			for _, r := range runes {
 				size += utf8.RuneLen(r)

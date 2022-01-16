@@ -60,7 +60,7 @@ func TestReplace(t *testing.T) {
 		},
 		{
 			input:    "not valid flags :flag-tra: :flag-t: testing",
-			expected: fmt.Sprintf("not valid flags :flag-tra: :flag-t: testing"),
+			expected: "not valid flags :flag-tra: :flag-t: testing",
 		},
 		{
 			input:    "dummytext",
@@ -203,6 +203,11 @@ func TestDeparse(t *testing.T) {
 			name:     "emoji Numbers, words and real numbers",
 			inputStr: "4️⃣ haha6 8 2️⃣",
 			want:     ":keycap_4: haha6 8 :keycap_2:",
+		},
+		{
+			name:     "emoji Number amalgam",
+			inputStr: "🔢",
+			want:     ":input_numbers:",
 		},
 		{
 			name:     "complex with heart emoji - 👩🏾‍❤️‍👨🏿",
