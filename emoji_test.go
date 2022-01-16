@@ -323,3 +323,143 @@ func BenchmarkCountryFlag(b *testing.B) {
 		_, _ = CountryFlag("tr")
 	}
 }
+
+func TestHasTone(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{
+			name: "NoTone: clean string",
+			in:   "hello world, I'm number 1!",
+			want: false,
+		},
+		{
+			name: "NoTone: Random emojis ",
+			in:   "❤️🕓😏💗😶‍🌫️🐔🎀🎠",
+			want: false,
+		},
+		{
+			name: "HasTone:  complex emoji string",
+			in:   "👩🏽‍❤️‍💋‍👨🏿👨🏿‍🦰👩🏿‍🤝‍👨🏽f4mily!👨‍👨‍👧*️⃣🧑🏿‍🤝‍🧑🏻",
+			want: true,
+		},
+		{
+			name: "HasTone: random numbers, stringm emoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣🧑🏿‍🤝‍🧑🏻",
+			want: true,
+		},
+		{
+			name: "NoTone: random numbers, stringemoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣",
+			want: false,
+		},
+		{
+			name: "NoTone: emojis with default tone ",
+			in:   "🧑‍🤝‍🧑👬👨👴🧎‍♂️🦸‍♂️👲👳‍♀️🚣‍♀️🏄‍♀️⛹️‍♀️👮‍♀️👩‍🦰🤼🧑‍🍼",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := HasTone(tt.in); got != tt.want {
+				t.Errorf("HasTone() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetAllTones(t *testing.T) {
+
+	tests := []struct {
+		name string
+		in   string
+		want []Tone
+	}{
+		{
+			name: "NoTone: clean string",
+			in:   "hello world, I'm number 1!",
+			want: []Tone{},
+		},
+		{
+			name: "NoTone: Random emojis ",
+			in:   "❤️🕓😏💗😶‍🌫️🐔🎀🎠",
+			want: []Tone{},
+		},
+		{
+			name: "HasTone:  complex emoji string",
+			in:   "👩🏽‍❤️‍💋‍👨🏿👨🏿‍🦰👩🏿‍🤝‍👨🏽f4mily!👨‍👨‍👧*️⃣🧑🏿‍🤝‍🧑🏻🧑🏼‍❤️‍💋‍🧑🏽💏🏽🧔🏻",
+			want: []Tone{Medium, Dark, Dark, Dark, Medium, Dark, Light, MediumLight, Medium, Medium, Light},
+		},
+		{
+			name: "HasTone: random numbers, stringm emoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣🧑🏿‍🤝‍🧑🏻",
+			want: []Tone{Dark, Light},
+		},
+		{
+			name: "NoTone: random numbers, stringemoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣",
+			want: []Tone{},
+		},
+		{
+			name: "NoTone: emojis with default tone ",
+			in:   "🧑‍🤝‍🧑👬👨👴🧎‍♂️🦸‍♂️👲👳‍♀️🚣‍♀️🏄‍♀️⛹️‍♀️👮‍♀️👩‍🦰🤼🧑‍🍼",
+			want: []Tone{},
+		},
+		{
+			name: "NoTone: emojis with default tone ",
+			in:   "💑",
+			want: []Tone{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetAllTones(tt.in); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAllTones() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetTone(t *testing.T) {
+
+	tests := []struct {
+		name string
+		in   string
+		want Tone
+	}{
+		{
+			name: "NoTone: clean string",
+			in:   "hello world, I'm number 1!",
+			want: "",
+		},
+		{
+			name: "NoTone: Random emojis ",
+			in:   "❤️🕓😏💗😶‍🌫️🐔🎀🎠",
+			want: "",
+		},
+		{
+			name: "HasTone:  complex emoji string",
+			in:   "👩🏽‍❤️‍💋‍👨🏿👨🏿‍🦰👩🏿‍🤝‍👨🏽f4mily!👨‍👨‍👧*️⃣🧑🏿‍🤝‍🧑🏻🧑🏼‍❤️‍💋‍🧑🏽💏🏽🧔🏻",
+			want: Medium,
+		},
+		{
+			name: "HasTone: random numbers, stringm emoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣🧑🏿‍🤝‍🧑🏻",
+			want: Dark,
+		},
+		{
+			name: "NoTone: random numbers, stringemoji numbers ",
+			in:   "1234567890* *️⃣🔢3️⃣1️⃣5️⃣7️⃣2️⃣4️⃣",
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetTone(tt.in); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetTone() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

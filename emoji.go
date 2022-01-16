@@ -1,9 +1,14 @@
 package emoji
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"unicode/utf8"
+)
+
+var (
+	ErrInvalidTone = errors.New("tone is not a known or valid skintone")
 )
 
 // Base attributes
@@ -176,7 +181,7 @@ func RemoveEmojis(in string) string {
 		}
 		r, size := utf8.DecodeRuneInString(in)
 		cRunes = append(cRunes, r)
-		c := fmt.Sprintf("%s", string(cRunes))
+		c := string(cRunes)
 		_, ok1 := reverseEmojiMap[c]
 		_, ok2 := reverseEmojiMap[in]
 		if (ok1 || ok2) && !NumberMap[c] {
@@ -202,18 +207,9 @@ func RemoveEmojis(in string) string {
 // FindAll finds all emojis in given string and return as an array of strings. If there are no emojis it returns a nil-slice.
 func FindAll(in string) []string {
 	var emojis []string = make([]string, 0)
-
 	var cRunes []rune
-	var output strings.Builder
 
-	// var numLookup = make(map[string]string)
-
-	// var potentialNumEmoji []rune
-	// potentialNumPos := numRegex.FindAllStringIndex(in, -1)
 	potentialNums := numRegex.FindAllString(in, -1)
-	// for i := 0; i < len(potentialNumPos); i++ {
-	// 	numLoc[fmt.Sprintf("%d", potentialNumPos[i][0])] = potentialNums[i]
-	// }
 	placeholder := "-"
 	prevWasJoiner := false
 	in = numRegex.ReplaceAllString(in, placeholder)
@@ -234,7 +230,6 @@ func FindAll(in string) []string {
 			emojis = append(emojis, numEmoji)
 			potentialNums = potentialNums[1:]
 			continue
-
 		}
 		if isSkinTone(c) {
 			emojis[len(emojis)-1] += c
@@ -247,19 +242,40 @@ func FindAll(in string) []string {
 			in = in[size:]
 			continue
 		}
-
 		if s := RunesToHexKey([]rune{r}); len(s) >= 4 {
 			in = in[size:]
 			continue
 		}
 		// Flush cRunes if any
 		if len(cRunes) > 0 {
-			output.WriteString(string(cRunes))
 			cRunes = nil
 		}
 		in = in[size:]
 	}
 	return emojis
+}
+
+// Checks whether an emoji in a given string has a skin tone applied
+func HasTone(in string) bool {
+	return isSkinTone(in)
+}
+
+// Returns one skin tone of the first emoji that has a tone applied, if none are found, an empty string is returned
+func GetTone(in string) Tone {
+	first := toneRegex.FindString(in)
+	t, _ := matchToneToInternal(first) // error is disregarded since regex match is either valid or empty
+	return t
+}
+
+// Returns all valid skin tones in a given string having emojis with tones applied
+func GetAllTones(in string) []Tone {
+	tones := make([]Tone, 0)
+	matches := toneRegex.FindAllString(in, -1)
+	for _, v := range matches {
+		t, _ := matchToneToInternal(v) // error is disregarded since regex match is either valid or empty
+		tones = append(tones, t)
+	}
+	return tones
 }
 
 // Return random emoji
@@ -270,21 +286,28 @@ func Random() string {
 }
 
 func isSkinTone(in string) bool {
+	_, err := matchToneToInternal(in)
+	ok := toneRegex.MatchString(in)
+	return err == nil || ok
+}
+
+func matchToneToInternal(in string) (Tone, error) {
 	switch in {
 	case Light.String():
-		return true
+		return Light, nil
 	case MediumLight.String():
-		return true
+		return MediumLight, nil
 	case Medium.String():
-		return true
+		return Medium, nil
 	case MediumDark.String():
-		return true
+		return MediumDark, nil
 	case Dark.String():
-		return true
+		return Dark, nil
 	default:
-		return false
+		return "", ErrInvalidTone
 	}
 }
+
 func isJoiner(in string) bool {
 	return joinerRegex.MatchString(in)
 }
